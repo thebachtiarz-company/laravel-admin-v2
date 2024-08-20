@@ -27,7 +27,7 @@ class FilamentAdminServiceProvider extends PanelProvider
 
         $panel->sidebarCollapsibleOnDesktop();
 
-        $panel->brandName('System Admin')->id('system-admin')->path(config('tbadmin.filament_admin_uri'));
+        $panel->brandName('System Admin')->id('system-admin')->path(config(key: 'tbadmin.filament_admin_uri', default: 'system-admin'));
 
         $panel->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication');
 
