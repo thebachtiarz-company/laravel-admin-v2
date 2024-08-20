@@ -1,0 +1,47 @@
+{
+    "name": "thebachtiarz-company/laravel-admin-v2",
+    "description": "Admin module for Laravel Project v2",
+    "type": "library",
+    "version": "0.0.1",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.20",
+        "filament/filament": "^3.2",
+        "thebachtiarz-company/laravel-base-v2": "*",
+        "thebachtiarz-company/laravel-config-v2": "*",
+        "thebachtiarz-company/laravel-oauth-v2": "*"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "TheBachtiarz\\Admin\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "thebachtiarz-company",
+            "email": "thebachtiarz.company@gmail.com"
+        }
+    ],
+    "keywords": [
+        "laravel",
+        "thebachtiarz",
+        "admin"
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TheBachtiarz\\Admin\\Providers\\ServiceProvider",
+                "TheBachtiarz\\Admin\\Providers\\RouteServiceProvider",
+                "TheBachtiarz\\Admin\\Providers\\FilamentAdminServiceProvider"
+            ]
+        }
+    },
+    "homepage": "https://github.com/thebachtiarz-company/laravel-admin-v2",
+    "support": {
+        "issues": "https://github.com/thebachtiarz-company/laravel-admin-v2/issues",
+        "source": "https://github.com/thebachtiarz-company/laravel-admin-v2"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
