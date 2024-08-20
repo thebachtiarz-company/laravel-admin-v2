@@ -2,7 +2,7 @@
     "name": "thebachtiarz-company/laravel-admin-v2",
     "description": "Admin module for Laravel Project v2",
     "type": "library",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.20",

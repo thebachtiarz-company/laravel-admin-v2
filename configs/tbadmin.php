@@ -11,7 +11,7 @@ return [
     |
     */
     'filament_discover_clusters' => [
-        //
+        ['class' => \TheBachtiarz\Admin\Filament\Clusters\ClusterCall::class],
     ],
 
     /*
