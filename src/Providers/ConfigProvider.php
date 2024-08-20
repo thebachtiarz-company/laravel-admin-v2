@@ -12,7 +12,7 @@ class ConfigProvider
 
         // ? Auth
         $registerConfig[] = [
-            'auth.providers.users.model' => config('tboauth.auth_user_model', AuthUser::class),
+            'auth.providers.users.model' => config(key: 'tboauth.auth_user_model', default: AuthUser::class),
         ];
 
         foreach ($registerConfig as $key => $config) {

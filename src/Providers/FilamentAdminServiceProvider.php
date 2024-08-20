@@ -89,7 +89,7 @@ class FilamentAdminServiceProvider extends PanelProvider
 
     protected function discoverCompositions(Panel &$panel, string $config, string $method): void
     {
-        foreach (config($config) as $key => $cluster) {
+        foreach (config(key: $config, default: []) as $key => $cluster) {
             $cluster = new DiscoverClassDTO(...$cluster);
 
             $panel->{$method}(in: $cluster->path, for: $cluster->namespace);
@@ -98,6 +98,6 @@ class FilamentAdminServiceProvider extends PanelProvider
 
     protected function customCompositions(Panel &$panel, string $config, string $method): void
     {
-        $panel->{$method}(config($config));
+        $panel->{$method}(config(key: $config, default: []));
     }
 }
