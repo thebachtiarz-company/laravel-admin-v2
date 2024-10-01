@@ -35,5 +35,6 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $publishName = 'thebachtiarz-admin';
 
         $this->publishes([__DIR__ . "/../../configs/$configName.php" => config_path("$configName.php")], "$publishName-config");
+        $this->publishes([__DIR__ . '/../../database/migrations' => database_path('migrations')], "$publishName-migrations");
     }
 }

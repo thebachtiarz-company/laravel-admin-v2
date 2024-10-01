@@ -37,7 +37,7 @@ class AuthUser extends OauthAuthUser implements AuthUserInterface, FilamentUser,
     {
         $identifierPrefix = explode(separator: '@', string: $this->getIdentifier())[0];
         $letterColor = 'FFFFFF';
-        $bgColor = str(fake()->hexColor())->trim('#');
+        $bgColor = sprintf('%06X', mt_rand(0, 0xFFFFFF));
 
         return sprintf(
             'https://ui-avatars.com/api/?name=%s&color=%s&background=%s',

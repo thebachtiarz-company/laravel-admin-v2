@@ -18,6 +18,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use TheBachtiarz\Admin\DTOs\Filament\Configs\DiscoverClassDTO;
+use TheBachtiarz\Config\Helpers\ConfigHelper;
 
 class FilamentAdminServiceProvider extends PanelProvider
 {
@@ -27,7 +28,7 @@ class FilamentAdminServiceProvider extends PanelProvider
 
         $panel->sidebarCollapsibleOnDesktop();
 
-        $panel->brandName('System Admin')->id('system-admin')->path(config(key: 'tbadmin.filament_admin_uri', default: 'system-admin'));
+        $panel->brandName('System Admin')->id('system-admin')->path(ConfigHelper::config('tbadmin.filament_admin_uri') ?? config(key: 'tbadmin.filament_admin_uri', default: 'system-admin'));
 
         $panel->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication');
 
