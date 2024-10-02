@@ -10,6 +10,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use TheBachtiarz\Admin\Filament\Clusters\AuthToken\Resources\AuthTokenResource\Pages;
+use TheBachtiarz\Admin\Filament\Clusters\AuthUser\Resources\AuthUserResource\Pages\EditAuthUser;
 use TheBachtiarz\Admin\Traits\Filament\Resources\HasAuthorizedResource;
 use TheBachtiarz\OAuth\Helpers\OauthModelHelper;
 use TheBachtiarz\OAuth\Models\AuthToken;
@@ -45,7 +46,7 @@ class AuthTokenResource extends Resource
                 TextColumn::make('tokenable_id')->label('Owner Access')
                     ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold)
                     ->formatStateUsing(fn(int $state): string => OauthModelHelper::instance()::find($state)->getIdentifier())
-                    ->url(fn(int $state): string => sprintf('credentials/%s/edit', $state), true)
+                    ->url(fn(int $state): string => EditAuthUser::getUrl(['record' => $state]))->openUrlInNewTab()
                     ->limit(15)
                     ->searchable()->sortable(),
                 TextColumn::make('created_at')->label('Created')
