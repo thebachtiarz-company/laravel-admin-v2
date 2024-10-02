@@ -52,7 +52,7 @@ class EditSystemConfig extends EditRecord
 
         return [
             ConfigInterface::ATTRIBUTE_PATH => $entity->getPath(),
-            ConfigInterface::ATTRIBUTE_VALUE => $entity->getValue(),
+            ConfigInterface::ATTRIBUTE_VALUE => $entity->{ConfigInterface::VALUE_FORMATTED},
             ConfigInterface::ATTRIBUTE_IS_ENCRYPT => $entity->getIsEncrypt(),
         ];
     }

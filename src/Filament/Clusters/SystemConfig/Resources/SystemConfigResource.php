@@ -10,10 +10,9 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use TheBachtiarz\Admin\Filament\Clusters\SystemConfig\Resources\SystemConfigResource\Forms\MainForm;
 use TheBachtiarz\Admin\Filament\Clusters\SystemConfig\Resources\SystemConfigResource\Pages;
 use TheBachtiarz\Admin\Traits\Filament\Resources\HasAuthorizedResource;
-use TheBachtiarz\Config\Http\Requests\Rules\ConfigPathRule;
-use TheBachtiarz\Config\Http\Requests\Rules\ConfigValueRule;
 use TheBachtiarz\Config\Interfaces\Models\ConfigInterface;
 use TheBachtiarz\Config\Models\Config;
 
@@ -36,25 +35,7 @@ class SystemConfigResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make()->schema([
-                    Forms\Components\Group::make()->schema([
-                        Forms\Components\TextInput::make(ConfigInterface::ATTRIBUTE_PATH)->label('Config Path')->inlineLabel()
-                            ->prefixIcon('heroicon-o-wrench')
-                            ->required()
-                            ->rules(ConfigPathRule::rules()[ConfigPathRule::PATH])
-                            ->live()
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make(ConfigInterface::ATTRIBUTE_VALUE)->label('Config Value')->inlineLabel()
-                            ->prefixIcon('heroicon-o-document')
-                            ->required()
-                            ->rules(ConfigValueRule::rules()[ConfigValueRule::VALUE])
-                            ->live()
-                            ->columnSpanFull(),
-                        Forms\Components\Toggle::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Encrypt Config Value')->inlineLabel()
-                            ->live()
-                            ->onIcon('heroicon-c-check-circle')->onColor('info')
-                            ->offIcon('heroicon-c-x-circle')->offColor('success')
-                            ->columnSpanFull(),
-                    ])->columns(12)->columnStart(['sm' => 'full', 'md' => 2])->columnSpan(['sm' => 'full', 'md' => 10]),
+                    MainForm::form(),
                 ])->columns(12)->columnSpanFull(),
             ])->columns(12);
     }
@@ -68,8 +49,9 @@ class SystemConfigResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->copyable()->copyMessage('Config path copied')->copyMessageDuration(1500),
-                Tables\Columns\TextColumn::make(ConfigInterface::ATTRIBUTE_VALUE)->label('Config Value')
-                    ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold),
+                Tables\Columns\TextColumn::make(ConfigInterface::VALUE_FORMATTED)->label('Config Value')
+                    ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold)
+                    ->limit(50),
                 Tables\Columns\TextColumn::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Is Encrypted')
                     ->formatStateUsing(fn(bool $state): string => $state ? 'Yes' : 'No')
                     ->badge()->color(fn(bool $state): string => $state ? 'info' : 'success')
@@ -80,9 +62,14 @@ class SystemConfigResource extends Resource
                     ->since(),
             ])
             ->filters([
-                Tables\Filters\Filter::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Is Encrypted')
-                    ->query(fn(): Builder => static::$model::query()->where(column: ConfigInterface::ATTRIBUTE_IS_ENCRYPT, operator: '=', value: 1))
-                    ->toggle(),
+                Tables\Filters\TernaryFilter::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Is Encrypted')
+                    ->trueLabel('Yes')->falseLabel('No')
+                    ->queries(
+                        true: fn(Builder $builder): Builder => $builder->where(ConfigInterface::ATTRIBUTE_IS_ENCRYPT, true),
+                        false: fn(Builder $builder): Builder => $builder->where(ConfigInterface::ATTRIBUTE_IS_ENCRYPT, false),
+                        blank: fn(Builder $builder): Builder => $builder,
+                    )
+                    ->native(false),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

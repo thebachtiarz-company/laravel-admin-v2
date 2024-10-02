@@ -16,9 +16,11 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use TheBachtiarz\Admin\DTOs\Filament\Configs\DiscoverClassDTO;
 use TheBachtiarz\Config\Helpers\ConfigHelper;
+use TheBachtiarz\Config\Interfaces\Models\ConfigInterface;
 
 class FilamentAdminServiceProvider extends PanelProvider
 {
@@ -28,7 +30,7 @@ class FilamentAdminServiceProvider extends PanelProvider
 
         $panel->sidebarCollapsibleOnDesktop();
 
-        $panel->brandName('System Admin')->id('system-admin')->path(ConfigHelper::config('tbadmin.filament_admin_uri') ?? config(key: 'tbadmin.filament_admin_uri', default: 'system-admin'));
+        $panel->brandName('System Admin')->id('system-admin')->path($this->getAdminUriPath());
 
         $panel->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication');
 
@@ -100,5 +102,17 @@ class FilamentAdminServiceProvider extends PanelProvider
     protected function customCompositions(Panel &$panel, string $config, string $method): void
     {
         $panel->{$method}(config(key: $config, default: []));
+    }
+
+    private function isConfigTableExist(): bool
+    {
+        return Schema::hasTable(ConfigInterface::TABLE_NAME);
+    }
+
+    private function getAdminUriPath(): string
+    {
+        return $this->isConfigTableExist()
+            ? (ConfigHelper::config('tbadmin.filament_admin_uri') ?? config(key: 'tbadmin.filament_admin_uri', default: 'system-admin'))
+            : config(key: 'tbadmin.filament_admin_uri', default: 'system-admin');
     }
 }
