@@ -34,14 +34,16 @@ class FilamentAdminServiceProvider extends PanelProvider
 
         $panel->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication');
 
-        $panel->colors([
-            'danger' => Color::Rose,
-            'gray' => Color::Gray,
-            'info' => Color::Blue,
-            'primary' => Color::Indigo,
-            'success' => Color::Emerald,
-            'warning' => Color::Orange,
-        ])->defaultThemeMode(ThemeMode::System);
+        $panel->colors(array_merge(
+            Color::all(),
+            [
+                'primary' => Color::Indigo,
+                'info' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
+                'danger' => Color::Rose,
+            ],
+        ))->defaultThemeMode(ThemeMode::System);
 
         $this->defineCompositions(panel: $panel);
 
