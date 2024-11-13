@@ -63,6 +63,7 @@ class SystemConfigResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Is Encrypted')
+                    ->placeholder('All')
                     ->trueLabel('Yes')->falseLabel('No')
                     ->queries(
                         true: fn(Builder $builder): Builder => $builder->where(ConfigInterface::ATTRIBUTE_IS_ENCRYPT, true),

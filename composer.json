@@ -2,7 +2,7 @@
     "name": "thebachtiarz-company/laravel-admin-v2",
     "description": "Admin module for Laravel Project v2",
     "type": "library",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "require": {
         "php": "^8.3",
         "laravel/framework": "^11.20",
@@ -36,6 +36,13 @@
                 "TheBachtiarz\\Admin\\Providers\\FilamentAdminServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
+        ]
     },
     "homepage": "https://github.com/thebachtiarz-company/laravel-admin-v2",
     "support": {

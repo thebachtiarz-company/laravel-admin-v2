@@ -38,6 +38,7 @@ class FilamentAdminServiceProvider extends PanelProvider
             Color::all(),
             [
                 'primary' => Color::Indigo,
+                'secondary' => Color::Slate,
                 'info' => Color::Blue,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,

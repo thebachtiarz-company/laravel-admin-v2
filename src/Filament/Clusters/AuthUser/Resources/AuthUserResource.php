@@ -77,26 +77,23 @@ class AuthUserResource extends Resource
                     ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold)
                     ->limit(7),
                 Tables\Columns\TextColumn::make(AuthUserInterface::ATTRIBUTE_CODE)->label('User Unique Code')
-                    ->fontFamily(FontFamily::Mono)
+                    ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold)
                     ->limit(15),
                 Tables\Columns\TextColumn::make(AuthUserInterface::ATTRIBUTE_CREATED_AT)->label('Registered At')
                     ->fontFamily(FontFamily::Mono)
                     ->since(),
             ])
             ->filters([
-                Tables\Filters\Filter::make(AuthUserInterface::ATTRIBUTE_USERNAME)->label('Have username')
-                    ->modifyQueryUsing(fn(Builder $builder): Builder => $builder->whereNotNull(AuthUserInterface::ATTRIBUTE_USERNAME))
-                    ->toggle(),
-                Tables\Filters\TernaryFilter::make('trashed')
-                    ->placeholder('Without trashed records')
-                    ->native(false)
-                    ->trueLabel('With trashed records')
-                    ->falseLabel('Only trashed records')
+                Tables\Filters\TernaryFilter::make(AuthUserInterface::ATTRIBUTE_USERNAME)->label('Have Username')
+                    ->placeholder('All')
+                    ->trueLabel('With username')->falseLabel('Without username')
                     ->queries(
-                        true: fn(Builder $query) => $query->withTrashed(),
-                        false: fn(Builder $query) => $query->onlyTrashed(),
+                        true: fn(Builder $query) => $query->whereNotNull(AuthUserInterface::ATTRIBUTE_USERNAME),
+                        false: fn(Builder $query) => $query->whereNull(AuthUserInterface::ATTRIBUTE_USERNAME),
                         blank: fn(Builder $query) => $query->withoutTrashed(),
-                    ),
+                    )
+                    ->native(false),
+                Tables\Filters\TrashedFilter::make()->native(false),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
