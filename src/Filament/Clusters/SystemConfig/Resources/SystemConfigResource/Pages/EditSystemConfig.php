@@ -6,10 +6,12 @@ use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Enums\IconPosition;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Model;
 use TheBachtiarz\Admin\Filament\Clusters\SystemConfig\Resources\SystemConfigResource;
-use TheBachtiarz\Base\DTOs\Services\ResponseDataDTO;
 use TheBachtiarz\Config\Enums\Services\ConfigIsEncryptEnum;
+use TheBachtiarz\Config\Http\Requests\Rules\ConfigPathRule;
+use TheBachtiarz\Config\Http\Requests\Rules\ConfigValueRule;
 use TheBachtiarz\Config\Interfaces\Models\ConfigInterface;
 use TheBachtiarz\Config\Interfaces\Repositories\ConfigRepositoryInterface;
 use TheBachtiarz\Config\Interfaces\Services\ConfigServiceInterface;
@@ -17,22 +19,6 @@ use TheBachtiarz\Config\Interfaces\Services\ConfigServiceInterface;
 class EditSystemConfig extends EditRecord
 {
     protected static string $resource = SystemConfigResource::class;
-
-    protected ConfigRepositoryInterface $configRepository;
-
-    protected ConfigServiceInterface $configService;
-
-    protected ResponseDataDTO $processResponse;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->configRepository = app(ConfigRepositoryInterface::class);
-        $this->configService = app(ConfigServiceInterface::class);
-        $this->processResponse = new ResponseDataDTO();
-    }
 
     protected function getHeaderActions(): array
     {
@@ -48,7 +34,7 @@ class EditSystemConfig extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $entity = $this->configRepository->getByPath(path: $data[ConfigInterface::ATTRIBUTE_PATH]);
+        $entity = app(ConfigRepositoryInterface::class)->getByPath(path: $data[ConfigInterface::ATTRIBUTE_PATH]);
 
         return [
             ConfigInterface::ATTRIBUTE_PATH => $entity->getPath(),
@@ -82,8 +68,8 @@ class EditSystemConfig extends EditRecord
         $validate = validator(
             data: $data,
             rules: [
-                ConfigInterface::ATTRIBUTE_PATH => ['required', 'string'],
-                ConfigInterface::ATTRIBUTE_VALUE => ['required', 'string'],
+                ConfigInterface::ATTRIBUTE_PATH => ConfigPathRule::rules()[ConfigPathRule::PATH],
+                ConfigInterface::ATTRIBUTE_VALUE => ConfigValueRule::rules()[ConfigValueRule::VALUE],
                 ConfigInterface::ATTRIBUTE_IS_ENCRYPT => ['boolean'],
             ],
         );
@@ -94,6 +80,8 @@ class EditSystemConfig extends EditRecord
                 ->title('Some field are incorrect!')
                 ->body(json_encode($validate->errors()->getMessages()))
                 ->send();
+
+            throw new Halt();
         }
 
         return $validate->validated();
@@ -101,34 +89,26 @@ class EditSystemConfig extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $this->processResponse = $this->configService->createOrUpdate(
+        $process = app(ConfigServiceInterface::class)->createOrUpdate(
             pathName: $data[ConfigInterface::ATTRIBUTE_PATH],
             value: $data[ConfigInterface::ATTRIBUTE_VALUE],
             isEncrypt: ConfigIsEncryptEnum::tryFrom(@$data[ConfigInterface::ATTRIBUTE_IS_ENCRYPT]) ?? ConfigIsEncryptEnum::FALSE,
         );
 
-        if (!$this->processResponse->condition->value) {
-            return $record;
+        if (!$process->condition->toBoolean()) {
+            Notification::make()
+                ->warning()
+                ->title($process->message)
+                ->send();
+
+            throw new Halt();
         }
 
-        $entity = $this->configRepository->getByPath($this->processResponse->data[ConfigInterface::ATTRIBUTE_PATH]);
-
-        assert($entity instanceof Model);
-
-        return $entity;
+        return $process->model;
     }
 
     protected function afterSave(): void
     {
         // Runs after the form fields are saved to the database.
-    }
-
-    protected function getSavedNotification(): ?Notification
-    {
-        return Notification::make()
-            ->{$this->processResponse->condition->value ? 'success' : 'danger'}()
-            ->title($this->processResponse->condition->value ? 'Changes has been saved!' : 'Failed to update config!')
-            ->body($this->processResponse->condition->value ? null : $this->processResponse->message)
-            ->send();
     }
 }

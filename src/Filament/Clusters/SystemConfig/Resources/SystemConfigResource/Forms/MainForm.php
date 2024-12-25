@@ -16,16 +16,15 @@ class MainForm
                 ->prefixIcon('heroicon-o-wrench')
                 ->required()
                 ->rules(ConfigPathRule::rules()[ConfigPathRule::PATH])
-                ->live()
+                ->disabledOn('edit')->dehydrated()
                 ->columnSpanFull(),
             Forms\Components\TextInput::make(ConfigInterface::ATTRIBUTE_VALUE)->label('Config Value')->inlineLabel()
                 ->prefixIcon('heroicon-o-document')
                 ->required()
                 ->rules(ConfigValueRule::rules()[ConfigValueRule::VALUE])
-                ->live()
                 ->columnSpanFull(),
             Forms\Components\Toggle::make(ConfigInterface::ATTRIBUTE_IS_ENCRYPT)->label('Encrypt Config Value')->inlineLabel()
-                ->live()
+                ->helperText('Encrypt the config value to secure sensitive data')
                 ->onIcon('heroicon-c-check-circle')->onColor('info')
                 ->offIcon('heroicon-c-x-circle')->offColor('success')
                 ->columnSpanFull(),

@@ -40,24 +40,21 @@ class AuthUserResource extends Resource
                 Forms\Components\Section::make([
                     Forms\Components\Group::make()->schema([
                         Forms\Components\TextInput::make(AuthUserInterface::ATTRIBUTE_EMAIL)->label('Email')->inlineLabel()
-                            ->string()
+                            ->email()
                             ->rules(AuthEmailRule::rules()[AuthEmailRule::EMAIL])
                             ->unique(ignoreRecord: true)
                             ->prefixIcon('heroicon-o-at-symbol')
-                            ->live()
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make(AuthUserInterface::ATTRIBUTE_USERNAME)->label('Username')->inlineLabel()
                             ->string()
                             ->rules(AuthUsernameRule::rules()[AuthUsernameRule::USERNAME])
                             ->prefixIcon('heroicon-o-credit-card')
-                            ->live()
                             ->columnSpanFull(),
                         Forms\Components\TextInput::make(AuthUserInterface::ATTRIBUTE_PASSWORD)->label('Password')->inlineLabel()
                             ->password()
                             ->rules(AuthPasswordRule::rules()[AuthPasswordRule::PASSWORD])
                             ->revealable(true)
                             ->prefixIcon('heroicon-o-key')
-                            ->live()
                             ->columnSpanFull(),
                     ])->columns(12)->columnStart(['sm' => 'full', 'md' => 2])->columnSpan(['sm' => 'full', 'md' => 10]),
                 ])->columns(12)->columnSpanFull(),

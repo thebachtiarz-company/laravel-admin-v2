@@ -13,16 +13,6 @@ class EditAuthUser extends EditRecord
 {
     protected static string $resource = AuthUserResource::class;
 
-    protected AuthUserRepositoryInterface $authUserRepository;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->authUserRepository = app(AuthUserRepositoryInterface::class);
-    }
-
     protected function getHeaderActions(): array
     {
         return [
@@ -34,7 +24,7 @@ class EditAuthUser extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $entity = $this->authUserRepository->getByCode(code: $data[AuthUserInterface::ATTRIBUTE_CODE]);
+        $entity = app(AuthUserRepositoryInterface::class)->getByCode(code: $data[AuthUserInterface::ATTRIBUTE_CODE]);
 
         return [
             AuthUserInterface::ATTRIBUTE_CODE => $entity->getCode(),

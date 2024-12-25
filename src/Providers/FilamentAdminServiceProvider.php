@@ -26,45 +26,34 @@ class FilamentAdminServiceProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $panel->default();
-
-        $panel->sidebarCollapsibleOnDesktop();
-
-        $panel->brandName('System Admin')->id('system-admin')->path($this->getAdminUriPath());
-
-        $panel->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication');
-
-        $panel->colors(array_merge(
-            Color::all(),
-            [
+        $panel->default()
+            ->sidebarCollapsibleOnDesktop()
+            ->brandName('System Admin')->id('system-admin')->path($this->getAdminUriPath())
+            ->login(action: \TheBachtiarz\Admin\Filament\Admin\Auth\Pages\Login::class)->loginRouteSlug('authentication')
+            ->colors(array_merge(Color::all(), [
                 'primary' => Color::Indigo,
                 'secondary' => Color::Slate,
                 'info' => Color::Blue,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
                 'danger' => Color::Rose,
-            ],
-        ))->defaultThemeMode(ThemeMode::System);
+            ]))->defaultThemeMode(ThemeMode::System)
+            ->maxContentWidth(MaxWidth::Full)
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                VerifyCsrfToken::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])->authMiddleware([
+                Authenticate::class,
+            ])->spa();
 
         $this->defineCompositions(panel: $panel);
-
-        $panel->maxContentWidth(MaxWidth::Full);
-
-        $panel->middleware([
-            EncryptCookies::class,
-            AddQueuedCookiesToResponse::class,
-            StartSession::class,
-            AuthenticateSession::class,
-            ShareErrorsFromSession::class,
-            VerifyCsrfToken::class,
-            SubstituteBindings::class,
-            DisableBladeIconComponents::class,
-            DispatchServingFilamentEvent::class,
-        ])->authMiddleware([
-            Authenticate::class,
-        ]);
-
-        $panel->spa();
 
         return $panel;
     }
@@ -97,7 +86,6 @@ class FilamentAdminServiceProvider extends PanelProvider
     {
         foreach (config(key: $config, default: []) as $key => $cluster) {
             $cluster = new DiscoverClassDTO(...$cluster);
-
             $panel->{$method}(in: $cluster->path, for: $cluster->namespace);
         }
     }

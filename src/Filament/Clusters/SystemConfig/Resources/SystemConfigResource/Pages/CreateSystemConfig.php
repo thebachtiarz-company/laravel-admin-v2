@@ -4,59 +4,60 @@ namespace TheBachtiarz\Admin\Filament\Clusters\SystemConfig\Resources\SystemConf
 
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Model;
 use TheBachtiarz\Admin\Filament\Clusters\SystemConfig\Resources\SystemConfigResource;
-use TheBachtiarz\Base\DTOs\Services\ResponseDataDTO;
 use TheBachtiarz\Config\Enums\Services\ConfigIsEncryptEnum;
+use TheBachtiarz\Config\Http\Requests\Rules\ConfigPathRule;
+use TheBachtiarz\Config\Http\Requests\Rules\ConfigValueRule;
 use TheBachtiarz\Config\Interfaces\Models\ConfigInterface;
-use TheBachtiarz\Config\Interfaces\Repositories\ConfigRepositoryInterface;
 use TheBachtiarz\Config\Interfaces\Services\ConfigServiceInterface;
 
 class CreateSystemConfig extends CreateRecord
 {
     protected static string $resource = SystemConfigResource::class;
 
-    protected ConfigRepositoryInterface $configRepository;
-
-    protected ConfigServiceInterface $configService;
-
-    protected ResponseDataDTO $processResponse;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
+    protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $this->configRepository = app(ConfigRepositoryInterface::class);
-        $this->configService = app(ConfigServiceInterface::class);
-        $this->processResponse = new ResponseDataDTO();
+        $validate = validator(
+            data: $data,
+            rules: [
+                ConfigInterface::ATTRIBUTE_PATH => ConfigPathRule::rules()[ConfigPathRule::PATH],
+                ConfigInterface::ATTRIBUTE_VALUE => ConfigValueRule::rules()[ConfigValueRule::VALUE],
+                ConfigInterface::ATTRIBUTE_IS_ENCRYPT => ['boolean'],
+            ],
+        );
+
+        if ($validate->errors()->count()) {
+            Notification::make()
+                ->danger()
+                ->title('Some field are incorrect!')
+                ->body(json_encode($validate->errors()->getMessages()))
+                ->send();
+
+            throw new Halt();
+        }
+
+        return $validate->validated();
     }
 
     protected function handleRecordCreation(array $data): Model
     {
-        $this->processResponse = $this->configService->createOrUpdate(
+        $process = app(ConfigServiceInterface::class)->createOrUpdate(
             pathName: $data[ConfigInterface::ATTRIBUTE_PATH],
             value: $data[ConfigInterface::ATTRIBUTE_VALUE],
             isEncrypt: ConfigIsEncryptEnum::tryFrom(@$data[ConfigInterface::ATTRIBUTE_IS_ENCRYPT]) ?? ConfigIsEncryptEnum::FALSE,
         );
 
-        if (!$this->processResponse->condition->value) {
-            return new Model($data);
+        if (!$process->condition->toBoolean()) {
+            Notification::make()
+                ->warning()
+                ->title($process->message)
+                ->send();
+
+            throw new Halt();
         }
 
-        $entity = $this->configRepository->getByPath($this->processResponse->data[ConfigInterface::ATTRIBUTE_PATH]);
-
-        assert($entity instanceof Model);
-
-        return $entity;
-    }
-
-    protected function getCreatedNotification(): ?Notification
-    {
-        return Notification::make()
-            ->{$this->processResponse->condition->value ? 'success' : 'danger'}()
-            ->title(sprintf('%s create new configs', $this->processResponse->condition->value ? 'Successfully' : 'Failed to'))
-            ->body($this->processResponse->condition->value ? null : $this->processResponse->message)
-            ->send();
+        return $process->model;
     }
 }

@@ -2,15 +2,14 @@
 
 namespace TheBachtiarz\Admin\Filament\Clusters\AuthToken\Resources;
 
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use TheBachtiarz\Admin\Filament\Clusters\AuthToken\Resources\AuthTokenResource\Pages;
-use TheBachtiarz\Admin\Filament\Clusters\AuthUser\Resources\AuthUserResource\Pages\EditAuthUser;
 use TheBachtiarz\Admin\Traits\Filament\Resources\HasAuthorizedResource;
 use TheBachtiarz\OAuth\Helpers\OauthModelHelper;
 use TheBachtiarz\OAuth\Models\AuthToken;
@@ -29,26 +28,20 @@ class AuthTokenResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                //
-            ]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
+            ->poll('30s')
+            ->defaultGroup(
+                Tables\Grouping\Group::make('tokenable_id')->label('User')
+                    ->getTitleFromRecordUsing(fn(Model $model) => OauthModelHelper::instance()::find($model->tokenable_id)->getIdentifier())
+                    ->collapsible(),
+            )
             ->columns([
                 TextColumn::make('name')->label('Token Name')
-                    ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold),
-                TextColumn::make('tokenable_id')->label('Owner Access')
                     ->fontFamily(FontFamily::Mono)->weight(FontWeight::SemiBold)
-                    ->formatStateUsing(fn(int $state): string => OauthModelHelper::instance()::find($state)->getIdentifier())
-                    ->url(fn(int $state): string => EditAuthUser::getUrl(['record' => $state]))->openUrlInNewTab()
-                    ->limit(15)
-                    ->searchable()->sortable(),
+                    ->copyable()->copyMessage('Token copied')->copyMessageDuration(1500),
                 TextColumn::make('created_at')->label('Created')
                     ->fontFamily(FontFamily::Mono)
                     ->dateTime()
@@ -59,10 +52,6 @@ class AuthTokenResource extends Resource
                 TextColumn::make('expires_at')->label('Expired At')
                     ->fontFamily(FontFamily::Mono)
                     ->dateTime(),
-            ])
-            ->poll()
-            ->filters([
-                //
             ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),

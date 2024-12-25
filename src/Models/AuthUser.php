@@ -6,10 +6,10 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use TheBachtiarz\Admin\Helpers\Model\AuthUserModelHelper;
 use TheBachtiarz\OAuth\Interfaces\Models\AuthUserInterface;
-use TheBachtiarz\OAuth\Models\AuthUser as OauthAuthUser;
 
-class AuthUser extends OauthAuthUser implements AuthUserInterface, FilamentUser, HasAvatar
+class AuthUser extends \TheBachtiarz\OAuth\Models\AuthUser implements AuthUserInterface, FilamentUser, HasAvatar
 {
     /**
      * Constructor
@@ -30,7 +30,7 @@ class AuthUser extends OauthAuthUser implements AuthUserInterface, FilamentUser,
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return in_array(needle: $this->getIdentifier(), haystack: AuthUserModelHelper::getAdminList());
     }
 
     public function getFilamentAvatarUrl(): ?string
